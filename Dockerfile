@@ -14,6 +14,7 @@ ENV NODE_ENV="production"
 
 # Install Fly.io CLI
 RUN curl -L https://fly.io/install.sh | sh
+ENV PATH="/root/.fly/bin:$PATH"
 
 # Throw-away build stage to reduce size of final image
 FROM base as build
