@@ -1,0 +1,10 @@
+app = "carbon-aware-scaler"
+primary_region = "yyz"
+
+[processes]
+  worker = "node scale.mjs"
+
+[[vm]]
+  memory = "1gb"
+  cpu_kind = "shared"
+  cpus = 1
