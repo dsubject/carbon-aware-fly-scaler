@@ -18,13 +18,13 @@ jobs:
         with:
           node-version: '22.x'
 
-      - name: Install dependencies
-        run: npm install
-
       - name: Install Fly.io CLI
-        run: curl -L https://fly.io/install.sh | sh
+        uses: superfly/flyctl-actions/setup-flyctl@master
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+
+      - name: Install dependencies
+        run: npm install
 
       - name: Run scaling script
         run: node scale.mjs
