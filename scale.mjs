@@ -36,9 +36,6 @@ function scaleFlyApp(bestRegion) {
       console.log(`Scaled region ${region} to ${instanceCount} instances:\n${stdout}`);
     });
   });
-
-
-
 }
 
 // Automate the scaling
