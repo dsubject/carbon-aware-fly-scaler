@@ -12,6 +12,9 @@ WORKDIR /app
 # Set production environment
 ENV NODE_ENV="production"
 
+# Install Fly.io CLI
+RUN curl -L https://fly.io/install.sh | sh
+
 # Throw-away build stage to reduce size of final image
 FROM base as build
 
@@ -31,6 +34,9 @@ FROM base
 
 # Copy built application
 COPY --from=build /app /app
+
+# Add Flyctl to PATH
+ENV PATH="/root/.fly/bin:$PATH"
 
 # Expose the necessary port
 EXPOSE 3000
