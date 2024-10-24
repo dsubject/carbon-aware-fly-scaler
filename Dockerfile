@@ -12,8 +12,11 @@ WORKDIR /app
 # Set production environment
 ENV NODE_ENV="production"
 
+# Install Bash explicitly
+RUN apt-get update && apt-get install -y bash curl
+
 # Install Fly.io CLI
-RUN curl -L https://fly.io/install.sh | sh
+RUN curl -L https://fly.io/install.sh | bash
 ENV PATH="/root/.fly/bin:$PATH"
 
 # Throw-away build stage to reduce size of final image
@@ -42,5 +45,5 @@ ENV PATH="/root/.fly/bin:$PATH"
 # Expose the necessary port
 EXPOSE 3000
 
-# Run the correct ES module script
-CMD [ "node", "scale.mjs" ]
+# Run the correct ES module script using bash
+CMD [ "bash", "-c", "node scale.mjs" ]
