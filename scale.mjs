@@ -28,7 +28,7 @@ async function getBestRegion() {
 function scaleFlyApp(bestRegion) {
   regions.forEach((region) => {
     const instanceCount = region === bestRegion ? 3 : 0; // Scale to 3 for the best region, 0 for others
-    exec(`fly scale count --region ${region} ${instanceCount}`, (error, stdout, stderr) => {
+    exec(`fly scale count --region ${region} ${instanceCount} --process-group worker`, (error, stdout, stderr) => {
       if (error) {
         console.error(`Error scaling in region ${region}: ${error.message}`);
         return;
