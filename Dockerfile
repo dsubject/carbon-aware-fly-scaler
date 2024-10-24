@@ -12,7 +12,6 @@ WORKDIR /app
 # Set production environment
 ENV NODE_ENV="production"
 
-
 # Throw-away build stage to reduce size of final image
 FROM base as build
 
@@ -27,13 +26,14 @@ RUN npm ci
 # Copy application code
 COPY . .
 
-
 # Final stage for app image
 FROM base
 
 # Copy built application
 COPY --from=build /app /app
 
-# Start the server by default, this can be overwritten at runtime
+# Expose the necessary port
 EXPOSE 3000
-CMD [ "node", "scale.js" ]
+
+# Run the correct ES module script
+CMD [ "node", "scale.mjs" ]
