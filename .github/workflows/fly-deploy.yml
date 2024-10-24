@@ -3,9 +3,9 @@
 name: Scale Fly App Based on Carbon Intensity
 
 on:
-  schedule:
-    # Runs the script every hour
-    - cron: "0 * * * *"
+  push:
+    branches:
+      - main 
 
 jobs:
   scale:
