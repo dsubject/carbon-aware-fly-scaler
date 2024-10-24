@@ -15,6 +15,12 @@ ENV NODE_ENV="production"
 # Install Bash explicitly
 RUN apt-get update && apt-get install -y bash curl
 
+# Install Fly.io CLI here in the base image to ensure it's available
+RUN curl -L https://fly.io/install.sh | sh
+
+# Ensure Fly.io CLI is in the PATH
+ENV PATH="/root/.fly/bin:$PATH"
+
 # Throw-away build stage to reduce size of final image
 FROM base as build
 
@@ -35,11 +41,7 @@ FROM base
 # Copy built application
 COPY --from=build /app /app
 
-# Add Flyctl to PATH
-ENV PATH="/root/.fly/bin:$PATH"
-
-# Install Fly.io CLI in the final image
-RUN curl -L https://fly.io/install.sh | sh
+# Add Flyctl to PATH again for the final image
 ENV PATH="/root/.fly/bin:$PATH"
 
 # Expose the necessary port
