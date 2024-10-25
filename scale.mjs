@@ -63,7 +63,7 @@ async function scaleFlyApp(rankedRegions) {
   for (const region of rankedRegions) {
     const instanceCount = region.id === bestRegion ? 3 : 0; // Scale 3 in the best region, 0 in others
     try {
-      const { stdout } = await execPromise(`fly scale count --region ${region.id} ${instanceCount} --process-group worker --yes`);
+      const { stdout } = await execPromise(`flyctl scale count --region ${region.id} ${instanceCount} --process-group worker --yes`);
       console.log(`Scaled region ${region.id} to ${instanceCount} instances:\n${stdout}`);
     } catch (error) {
       console.error(`Error scaling region ${region.id}: ${error.message}`);
