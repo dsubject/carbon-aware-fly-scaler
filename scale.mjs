@@ -29,7 +29,8 @@ async function getRankedRegions() {
     return data.regions.map(region => ({
       id: region.id,
       carbonIntensity: region.intensity,
-    }));
+    }))
+    .sort((a, b) => a.carbonIntensity - b.carbonIntensity);
     
   } catch (error) {
     console.error("Error fetching ranked regions:", error.message);
@@ -40,6 +41,7 @@ async function getRankedRegions() {
 // Automate the scaling
 async function automateScaling() {
   const rankedRegions = await getRankedRegions();
+  console.log("ranked", rankedRegions)
   if (rankedRegions.length > 0) {
     await scaleFlyApp(rankedRegions);
   }
