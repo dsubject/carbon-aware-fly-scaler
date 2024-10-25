@@ -22,6 +22,8 @@ async function getRankedRegions() {
     
     const data = await response.json();
     
+    console.log("api data", data)
+
     if (!data.regions || data.regions.length === 0) {
       throw new Error('No regions returned by the API');
     }
@@ -48,6 +50,8 @@ async function automateScaling() {
 }
 
 // Scale the Fly.io app based on the best region
+
+// To Do: Add a fallback region in case the api fails
 async function scaleFlyApp(rankedRegions) {
   const bestRegion = rankedRegions[0].id; // Pull region with lowest carbon intensity
 
