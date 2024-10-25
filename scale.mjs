@@ -11,6 +11,7 @@ const carbonAwareApiUrl = 'https://api.carbonaware.cloud/v1';
 const provider = 'fly';  
 
 // Fetch ranked regions based on carbon intensity using Basic Authentication
+// Fetch ranked regions based on carbon intensity using Basic Authentication
 async function getRankedRegions() {
   try {
     const response = await fetch(`${carbonAwareApiUrl}/by-provider/${provider}`, {
@@ -19,25 +20,33 @@ async function getRankedRegions() {
         'Content-Type': 'application/json'
       }
     });
+
+    // Log raw response before parsing
+    const responseText = await response.text();
+    console.log("Raw response:", responseText);
+
+    // Attempt to parse JSON
+    const data = JSON.parse(responseText);
     
-    const data = await response.json();
-    
+    // Check if data is valid
     if (!data.regions || data.regions.length === 0) {
       throw new Error('No regions returned by the API');
     }
 
     console.log("API Data:", data.regions);
     
+    // Return formatted region data
     return data.regions.map(region => ({
       id: region.id,
       carbonIntensity: region.intensity,
     }));
-    
+
   } catch (error) {
     console.error("Error fetching ranked regions:", error.message);
     return [];
   }
 }
+
 
 // Automate the scaling
 async function automateScaling() {
