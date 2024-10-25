@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - main
+  schedule:
+    - cron: '0 */5 * * *'  # This runs every 5 hours
 
 jobs:
   scale:
