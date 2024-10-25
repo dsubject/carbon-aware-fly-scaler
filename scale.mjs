@@ -1,49 +1,65 @@
-import { exec } from 'child_process';
-import { promisify } from 'util';  // Promisify exec for async/await
 import fetch from 'node-fetch';
+import { exec } from 'child_process';
+import { promisify } from 'util';
 
-// Promisify exec
 const execPromise = promisify(exec);
 
-// Set up Carbon Aware API URL and Fly.io regions
-const carbonAwareApiUrl = 'https://carbon-aware-api.azurewebsites.net';
-const regions = ['yul', 'iad', 'sfo']; // Example Fly.io regions
+const tokenId = process.env.CARBON_API_TOKEN_ID;
+const tokenSecret = process.env.CARBON_API_TOKEN_SECRET;
 
-// Fetch carbon intensity for each region
-async function getCarbonIntensity(region) {
-  const response = await fetch(`${carbonAwareApiUrl}/emissions/bylocation?location=${region}`);
-  const data = await response.json();
-  return { region, carbonIntensity: data.carbonIntensity };
-}
+const carbonAwareApiUrl = 'https://api.carbonaware.cloud/v1';
+const provider = 'fly';  
 
-// Find the region with the lowest carbon intensity
-async function getBestRegion() {
-  const carbonData = await Promise.all(regions.map(getCarbonIntensity));
-  return carbonData.reduce((lowest, current) =>
-    current.carbonIntensity < lowest.carbonIntensity ? current : lowest
-  );
-}
-
-// Scale the Fly.io app based on the best region, and scale down in others
-function scaleFlyApp(bestRegion) {
-  regions.forEach((region) => {
-    const instanceCount = region === bestRegion ? 3 : 0; // Scale to 3 for the best region, 0 for others
-    exec(`fly scale count --region ${region} ${instanceCount} --process-group worker --yes`, (error, stdout, stderr) => {
-      if (error) {
-        console.error(`Error scaling in region ${region}: ${error.message}`);
-        return;
+// Fetch ranked regions based on carbon intensity using Basic Authentication
+async function getRankedRegions() {
+  try {
+    const response = await fetch(`${carbonAwareApiUrl}/by-provider/${provider}`, {
+      headers: {
+        'Authorization': `Basic ${Buffer.from(`${tokenId}:${tokenSecret}`).toString('base64')}`,
+        'Content-Type': 'application/json'
       }
-      console.log(`Scaled region ${region} to ${instanceCount} instances:\n${stdout}`);
     });
-  });
+    
+    const data = await response.json();
+    
+    if (!data.regions || data.regions.length === 0) {
+      throw new Error('No regions returned by the API');
+    }
+
+    console.log("API Data:", data.regions);
+    
+    return data.regions.map(region => ({
+      id: region.id,
+      carbonIntensity: region.intensity,
+    }));
+    
+  } catch (error) {
+    console.error("Error fetching ranked regions:", error.message);
+    return [];
+  }
 }
 
 // Automate the scaling
 async function automateScaling() {
-  const bestRegion = await getBestRegion();
-  console.log(`Best region: ${bestRegion.region} with carbon intensity ${bestRegion.carbonIntensity}`);
-  await scaleFlyApp(bestRegion.region); // Scale to region with the lowest carbon intensity
+  const rankedRegions = await getRankedRegions();
+  if (rankedRegions.length > 0) {
+    await scaleFlyApp(rankedRegions);
+  }
 }
 
-// Execute the scaling script
+// Scale the Fly.io app based on the best region
+async function scaleFlyApp(rankedRegions) {
+  const bestRegion = rankedRegions[0].id; // Pull region with lowest carbon intensity
+
+  for (const region of rankedRegions) {
+    const instanceCount = region.id === bestRegion ? 3 : 0; // Scale 3 in the best region, 0 in others
+    try {
+      const { stdout } = await execPromise(`fly scale count --region ${region.id} ${instanceCount} --process-group worker --yes`);
+      console.log(`Scaled region ${region.id} to ${instanceCount} instances:\n${stdout}`);
+    } catch (error) {
+      console.error(`Error scaling region ${region.id}: ${error.message}`);
+    }
+  }
+}
+
 automateScaling();
