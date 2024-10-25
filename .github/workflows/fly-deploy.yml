@@ -26,12 +26,6 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Ensure Fly.io CLI is in the PATH
-        run: |
-          echo 'Adding Fly.io CLI to PATH'
-          export PATH="/opt/hostedtoolcache/flyctl/0.3.29/x86_64:$PATH"
-          flyctl version  # Check if flyctl is available
-
       - name: Run scaling script
         run: |
           export CARBON_API_TOKEN_ID=${{ secrets.CARBON_API_TOKEN_ID }}
